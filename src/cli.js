@@ -34,7 +34,7 @@ async function promptForOptions() {
         message: 'Do you want username neccessary?',
         default: true
     }, {
-        when: function(response) {
+        when: function (response) {
             return response.usernameRequired;
         },
         type: 'number',
@@ -54,12 +54,19 @@ async function promptForOptions() {
     })
 
     questions.push({
+        type: 'list',
+        name: 'loginField',
+        message: 'User can login with?',
+        choices: ['username', 'email', 'username_email']
+    })
+
+    questions.push({
         type: 'confirm',
         name: 'emailVerification',
         message: 'Do you want email verification?',
         default: true
     }, {
-        when: function(response) {
+        when: function (response) {
             return response.emailVerification;
         },
         name: 'emailExpireTime',
@@ -70,7 +77,7 @@ async function promptForOptions() {
             return value > 0;
         }
     }, {
-        when: function(response) {
+        when: function (response) {
             return response.emailVerification;
         },
         type: 'confirm',
@@ -81,10 +88,38 @@ async function promptForOptions() {
 
     questions.push({
         type: 'list',
-        name: 'loginField',
-        message: 'User can login with?',
-        choices: ['username', 'email', 'username_email']
+        name: 'socialLogin',
+        message: 'Which social login is allowed?',
+        choices: ['facebook', 'google', 'both', 'none'],
+        default: 'none'
     })
+
+    questions.push({
+        type: 'confirm',
+        name: 'socialVerification',
+        message: 'Do you want social account verification?',
+        default: true
+    }, {
+        when: function (response) {
+            return !response.emailVerification && response.socialVerification;
+        },
+        name: 'emailExpireTime',
+        message: 'Email expiration time? (in minutes)',
+        type: 'number',
+        default: 5,
+        validate: function validateExpireTime(value) {
+            return value > 0;
+        }
+    }, {
+        when: function (response) {
+            return !response.emailVerification && response.socialVerification;
+        },
+        type: 'confirm',
+        name: 'loginWithoutVerification',
+        message: 'Allow user to login without email verification?',
+        default: true
+    })
+
 
     const answers = await inquirer.prompt(questions);
     return answers;
@@ -101,15 +136,19 @@ async function createConfig(options) {
             usernameRequired: ${options.usernameRequired},
             usernameLength: ${options.usernameLength},
             passwordAlphaNumeric: ${options.passwordAlphaNumeric},
-            loginField: ${options.loginField}
+            loginField: '${options.loginField}'
         },
         verification: {
             emailVerification: ${options.emailVerification},
             emailExpireTime: ${options.emailExpireTime},
             loginWithoutVerification: ${options.loginWithoutVerification},
+            socialVerification: ${options.socialVerification},
+        },
+        routes: {
+            socialLogin: '${options.socialLogin}'
         }
     };`
-    await fs.writeFile(options.projectDirectory + '\\express-template\\src\\util\\config.js', data, function(err) {
+    await fs.writeFile(options.projectDirectory + '\\express-template\\src\\util\\config.js', data, function (err) {
         if (err) throw err;
         console.log('Config created!');
     });
