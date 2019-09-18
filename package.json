@@ -1,10 +1,10 @@
 {
     "name": "express-auth-cli",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "",
     "main": "index.js",
     "bin": {
-        "project-init": "index.js"
+        "generate-cli": "index.js"
     },
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
@@ -13,10 +13,9 @@
     "license": "ISC",
     "dependencies": {
         "arg": "^4.1.1",
-        "commander": "^3.0.1",
         "esm": "^3.2.25",
+        "fs-extra": "^8.1.0",
         "inquirer": "^7.0.0",
-        "inquirer-path": "^1.0.0-beta5",
-        "simple-git": "^1.126.0"
+        "inquirer-path": "^1.0.0-beta5"
     }
 }

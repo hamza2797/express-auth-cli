@@ -1,12 +1,11 @@
-import arg from 'arg';
 import inquirer from 'inquirer'
-import fs from 'fs';
-import simpleGit from 'simple-git';
-
 import { PathPrompt } from 'inquirer-path';
 inquirer.prompt.registerPrompt('path', PathPrompt);
+import fs from 'fs-extra';
 
-// import { createProject } from './main';
+const path = require('path')
+
+const templatePath = path.join(__dirname, '..', 'template')
 
 async function promptForOptions() {
     const questions = [];
@@ -34,7 +33,7 @@ async function promptForOptions() {
         message: 'Do you want username neccessary?',
         default: true
     }, {
-        when: function (response) {
+        when: function(response) {
             return response.usernameRequired;
         },
         type: 'number',
@@ -66,7 +65,7 @@ async function promptForOptions() {
         message: 'Do you want email verification?',
         default: true
     }, {
-        when: function (response) {
+        when: function(response) {
             return response.emailVerification;
         },
         name: 'emailExpireTime',
@@ -77,7 +76,7 @@ async function promptForOptions() {
             return value > 0;
         }
     }, {
-        when: function (response) {
+        when: function(response) {
             return response.emailVerification;
         },
         type: 'confirm',
@@ -100,7 +99,7 @@ async function promptForOptions() {
         message: 'Do you want social account verification?',
         default: true
     }, {
-        when: function (response) {
+        when: function(response) {
             return !response.emailVerification && response.socialVerification;
         },
         name: 'emailExpireTime',
@@ -111,7 +110,7 @@ async function promptForOptions() {
             return value > 0;
         }
     }, {
-        when: function (response) {
+        when: function(response) {
             return !response.emailVerification && response.socialVerification;
         },
         type: 'confirm',
@@ -126,10 +125,17 @@ async function promptForOptions() {
 }
 
 async function cloneRepo(projectDirectory) {
-    await simpleGit().clone('https://github.com/hamza2797/express-template-generator.git', projectDirectory + '\\express-template')
+
+    let destination = path.join(projectDirectory, 'template');
+    if (!fs.existsSync(destination)) {
+        
+        fs.mkdirSync(destination, { recursive: true });
+    }
+    await fs.copy(templatePath, destination)
 }
 
 async function createConfig(options) {
+    
     const data = `module.exports = {
         validation: {
             passwordLength: ${options.passwordLength},
@@ -148,18 +154,18 @@ async function createConfig(options) {
             socialLogin: '${options.socialLogin}'
         }
     };`
-    await fs.writeFile(options.projectDirectory + '\\express-template\\src\\util\\config.js', data, function (err) {
+    await fs.writeFile(`${options.projectDirectory}/template/src/util/config.js`, data, function(err) {
         if (err) throw err;
         console.log('Config created!');
     });
 }
 
 
-export async function cli(args) {
+export async function cli() {
     let options = await promptForOptions();
-    console.log(options);
+
     await cloneRepo(options.projectDirectory);
 
-    console.log('repo generated')
+    console.log('template generated')
     await createConfig(options);
 }
